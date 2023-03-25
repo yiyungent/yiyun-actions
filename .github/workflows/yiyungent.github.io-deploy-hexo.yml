@@ -163,11 +163,12 @@ jobs:
       # 此种语法不合法 https://docs.github.com/en/actions/learn-github-actions/expressions
       # if: [ steps.fix-next-sidebar.outputs.conclusion -gt 100 ] && [ steps.build-2.outputs.conclusion -gt 100 ] 
       if: ${{ steps.fix-next-sidebar.outputs.conclusion > 100 && steps.build-2.outputs.conclusion > 100 }}
-      uses: JamesIves/github-pages-deploy-action@3.7.1
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}
-        BRANCH: gh-pages
-        FOLDER: public
+        token: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}
+        branch: gh-pages
+        folder: public
+        repository-name: yiyungent/yiyungent.github.io
 
     - name: Upyun Refresh
       if: ${{ steps.fix-next-sidebar.outputs.conclusion > 100 && steps.build-2.outputs.conclusion > 100 }}
