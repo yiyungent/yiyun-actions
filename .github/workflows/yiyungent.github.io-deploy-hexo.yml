@@ -1,0 +1,182 @@
+name: yiyungent.github.io - Build and Deploy Hexo
+on:
+  schedule: # Run workflow automatically
+    - cron: '0 * * * *' # Runs every hour, on the hour
+  workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the Github Actions Workflow page directly
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@master
+      with:
+        # Repository name with owner. For example, actions/checkout
+        # Default: ${{ github.repository }}
+        repository: 'yiyungent/yiyungent.github.io'
+        # The branch, tag or SHA to checkout. When checking out the repository that
+        # triggered a workflow, this defaults to the reference or SHA for that event.
+        # Otherwise, uses the default branch.
+        ref: 'master'
+        # Personal access token (PAT) used to fetch the repository. The PAT is configured
+        # with the local git config, which enables your scripts to run authenticated git
+        # commands. The post-job step removes the PAT.
+        #
+        # We recommend using a service account with the least permissions necessary. Also
+        # when generating a new PAT, select the least scopes necessary.
+        #
+        # [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
+        #
+        # Default: ${{ github.token }}
+        token: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}
+        # 为了让 git 有日志 (git log) 可寻，还得在检出的时候顺带把所有提交历史一并拉下来，指定 fetch-depth 就能做到
+        fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+        # submodules: true  # Fetch submodules (true OR recursive)
+
+    - name: TimeZone
+      run: |
+        echo "Before:"
+        date --iso-8601=seconds
+        ls -l /etc/localtime
+        # Setting TimeZone
+        sudo rm -f /etc/localtime
+        sudo ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+        echo "After:"
+        ls -l /etc/localtime
+        date --iso-8601=seconds
+      shell: bash
+
+    - name: Setup Python 3
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install pyimaging
+      run: |
+        pip install pyimaging
+        pyimaging --help
+      shell: bash
+
+    - name: Copyright Add watermark to images
+      run: |
+        pyimaging watermark --imagedir "./source/_posts" --mark "yiyun" --space 200 --color "#b7ffab" --opacity 0.3 --size 20 --quality 80
+        pyimaging blind-watermark --imagedir "./source/_posts" --mark-text "Powered by yiyun"
+      shell: bash
+
+    - name: Fix File Modify Date
+      # run: |
+          # 实测: 无效
+      #   git ls-files | while read filepath; do touch -d "$(git log -1 --format='@%ct' $filepath)" "$filepath" && echo "Fixed: $filepath"; done
+      # shell: bash
+      run: |
+        ./fix-date.ps1
+        ./updated.ps1
+      shell: pwsh
+
+    - name: Use Node.js 12
+      uses: actions/setup-node@v2-beta
+      with:
+        node-version: '12'
+
+    - name: Install Pandoc
+      run: |
+        sudo apt-get install pandoc
+        
+    - name: Install Packages 🔧 
+      run: |
+        npm install -g hexo-cli
+        # npm install
+        # 使用 npm ci 锁定版本, 确保 CI/CD 环境与开发环境一致, 同时确保不会出现 prompt
+        npm ci
+      shell: bash
+
+    - name: Fix NexT sidebar
+      id: fix-next-sidebar
+      run: |
+        # fixed: 使用 hexo-blog-encrypt 加密后, 导致 NexT 侧边目录不显示
+        cat './node_modules/hexo-theme-next/layout/_macro/sidebar.njk' | sed 's/toc(page.content/toc(page.origin/g' | tee './node_modules/hexo-theme-next/layout/_macro/sidebar.njk'
+        CON=$(cat './node_modules/hexo-theme-next/layout/_macro/sidebar.njk')
+        # 获取字符串长度
+        CON=${#CON}
+        echo "CON: ${CON}"
+        echo "conclusion=${CON}" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: 替换 Markdown 中 换行符
+      run: |
+        ./替换换行符.ps1
+      shell: pwsh
+
+    - name: Build 🔧 
+      run: |
+        hexo clean
+        # 解决 Hexo 文章时间为 UTC+0, 而不是 UTC+08:00
+        export TZ='Asia/Shanghai'
+        hexo generate
+
+    - name: Copy the pre-encrypted files to public-temp
+      run: |
+        #mkdir public-temp # 注意: public-temp 目录不能已存在, 否则会导致 public 文件夹复制进 public-temp 文件夹内, 不符合要求
+        cp -r public public-temp
+      shell: bash
+
+    - name: Hexo Encrypt
+      run: |
+        $hexoPassword="${{ secrets.HEXO_PASSWORD }}"
+        ./password.ps1
+      shell: pwsh
+
+    - name: Build 🔧 
+      id: build-2
+      run: |
+        hexo clean
+        # 解决 Hexo 文章时间为 UTC+0, 而不是 UTC+08:00
+        export TZ='Asia/Shanghai'
+        hexo generate
+        # 测试: 首页是否生成成功
+        CON=$(cat './public/index.html')
+        # 获取字符串长度
+        CON=${#CON}
+        echo "CON: ${CON}"
+        echo "conclusion=${CON}" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Copy the file before encryption and overwrite the file after encryption
+      run: |
+        #cp -f public-temp/search.xml  public/search.xml
+        cp -f public-temp/search.json  public/search.json
+        cp -f public-temp/atom.xml  public/atom.xml
+        cp -f public-temp/content.json  public/content.json
+      shell: bash
+    
+    - name: Send Email
+      if: ${{ steps.fix-next-sidebar.outputs.conclusion <= 100 || steps.build-2.outputs.conclusion <= 100 }}
+      env:
+        USER_EMAIL: ${{ secrets.USER_EMAIL }}
+        USER_EMAIL_PASSWORD: ${{ secrets.USER_EMAIL_PASSWORD }}
+      run: |
+        python email_sending.py
+      shell: bash
+
+    - name: Deploy 🚀
+      id: deploy
+      # 此种语法不合法 https://docs.github.com/en/actions/learn-github-actions/expressions
+      # if: [ steps.fix-next-sidebar.outputs.conclusion -gt 100 ] && [ steps.build-2.outputs.conclusion -gt 100 ] 
+      if: ${{ steps.fix-next-sidebar.outputs.conclusion > 100 && steps.build-2.outputs.conclusion > 100 }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}
+        BRANCH: gh-pages
+        FOLDER: public
+
+    - name: Upyun Refresh
+      if: ${{ steps.fix-next-sidebar.outputs.conclusion > 100 && steps.build-2.outputs.conclusion > 100 }}
+      uses: yiyungent/upyun-action@main
+      with:
+        # 在 Settings->Secrets 配置 UPYUN_USERNAME, UPYUN_PASSWORD
+        upyun_username: ${{ secrets.UPYUN_USERNAME }}
+        upyun_password: ${{ secrets.UPYUN_PASSWORD }}
+        # 要刷新的url, 支持匹配符 *, 多个url中间用 \n 隔开
+        refresh_cache_urls: "https://moeci.com/*\nhttps://moeci.com"
+        upyun_debug: true
+
