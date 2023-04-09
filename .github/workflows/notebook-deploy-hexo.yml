@@ -81,7 +81,7 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@4.0.0
       with:
-        server: ${{ secrets.FTP_SERVER }}
+        server: ${{ secrets.NOTEBOOK_FTP_SERVER }}
         username: ${{ secrets.NOTEBOOK_FTP_USERNAME }}
         password: ${{ secrets.NOTEBOOK_FTP_PASSWORD }}
         local-dir: ./public/
