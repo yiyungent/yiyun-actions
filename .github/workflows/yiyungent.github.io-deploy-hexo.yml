@@ -72,10 +72,10 @@ jobs:
         ./updated.ps1
       shell: pwsh
 
-    - name: Use Node.js 12
-      uses: actions/setup-node@v2-beta
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
       with:
-        node-version: '12'
+        node-version: '18'
 
     - name: Install Pandoc
       run: |
