@@ -78,10 +78,21 @@ jobs:
         hexo clean
         hexo generate
     
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@4.0.0
-      with:
-        server: ${{ secrets.NOTEBOOK_FTP_SERVER }}
-        username: ${{ secrets.NOTEBOOK_FTP_USERNAME }}
-        password: ${{ secrets.NOTEBOOK_FTP_PASSWORD }}
-        local-dir: ./public/
+    # - name: 📂 Sync files
+    #   uses: SamKirkland/FTP-Deploy-Action@4.0.0
+    #   with:
+    #     server: ${{ secrets.NOTEBOOK_FTP_SERVER }}
+    #     username: ${{ secrets.NOTEBOOK_FTP_USERNAME }}
+    #     password: ${{ secrets.NOTEBOOK_FTP_PASSWORD }}
+    #     local-dir: ./public/
+
+    - name: Deploy to Server
+      uses: easingthemes/ssh-deploy@main
+      env:
+          SSH_PRIVATE_KEY: ${{ secrets.NOTEBOOK_SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "public/"
+          REMOTE_HOST: ${{ secrets.NOTEBOOK_REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.NOTEBOOK_REMOTE_USER }}
+          TARGET: ${{ secrets.NOTEBOOK_REMOTE_TARGET }}
+          # EXCLUDE: "/dist/, /node_modules/"
