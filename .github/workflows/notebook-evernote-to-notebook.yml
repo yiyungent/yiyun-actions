@@ -80,7 +80,7 @@ jobs:
           # coo cimg --github-action -d --ignore-paths='${{ inputs.ignore_paths }}' ${{ github.workspace }}/${{ inputs.scan_directory }}
           # 防止因为附件已存在, 而导致再次创建相同附件(用加序号的方式)
           rm -rf ./source/_posts/分类-来自evernote
-          coo enex2md -t ".github/evernote-note.md" "./output_enexs_dir" "./source/_posts/分类-来自evernote"
+          coo enex2md -t '${{ github.workspace }}/github/evernote-note.md' '${{ github.workspace }}/output_enexs_dir' '${{ github.workspace }}/source/_posts/分类-来自evernote'
         shell: bash
 
       - name: Commit files
