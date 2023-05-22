@@ -1,0 +1,97 @@
+name: notebook - Evernote Sync to Notebook
+
+on:
+  workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the Github Actions Workflow page directly
+
+jobs:
+  sync:
+    name: 🎉 Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+        with:
+          # Repository name with owner. For example, actions/checkout
+          # Default: ${{ github.repository }}
+          repository: "yiyungent/notebook"
+          # The branch, tag or SHA to checkout. When checking out the repository that
+          # triggered a workflow, this defaults to the reference or SHA for that event.
+          # Otherwise, uses the default branch.
+          ref: "main"
+          # Personal access token (PAT) used to fetch the repository. The PAT is configured
+          # with the local git config, which enables your scripts to run authenticated git
+          # commands. The post-job step removes the PAT.
+          #
+          # We recommend using a service account with the least permissions necessary. Also
+          # when generating a new PAT, select the least scopes necessary.
+          #
+          # [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
+          #
+          # Default: ${{ github.token }}
+          token: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}
+          # 为了让 git 有日志 (git log) 可寻，还得在检出的时候顺带把所有提交历史一并拉下来，指定 fetch-depth 就能做到
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+
+      - name: TimeZone
+        run: |
+          echo "Before:"
+          date --iso-8601=seconds
+          ls -l /etc/localtime
+          # Setting TimeZone
+          sudo rm -f /etc/localtime
+          sudo ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          echo "After:"
+          ls -l /etc/localtime
+          date --iso-8601=seconds
+        shell: bash
+
+      - name: Setup Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install evernote-backup
+        run: |
+          pip install --user evernote-backup
+          evernote-backup --help
+        shell: bash
+
+      - name: evernote-backup sync
+        run: |
+          evernote-backup init-db --user ${{ secrets.NOTEBOOK_EVERNOTE_USER }} --password ${{ secrets.NOTEBOOK_EVERNOTE_PASSWORD }} --backend china
+          evernote-backup sync
+          evernote-backup export ./output_enexs_dir
+        shell: bash
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.100
+
+      - name: Install tool
+        run: |
+          dotnet tool install -g coo
+          coo --version
+        shell: bash
+
+      - name: Run tool enex2md
+        id: run-tool-enex2md
+        run: |
+          # coo cimg --github-action -d --ignore-paths='${{ inputs.ignore_paths }}' ${{ github.workspace }}/${{ inputs.scan_directory }}
+          coo enex2md -t ".github/evernote-note.md" "./output_enexs_dir" "./source/_posts/分类-来自evernote"
+        shell: bash
+
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add source/_posts/分类-来自evernote/*
+          git commit -m "Evernote Sync to Notebook"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}
+          branch: "main"
+          repository: yiyungent/notebook
+          force: false
