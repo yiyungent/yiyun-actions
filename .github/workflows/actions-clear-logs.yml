@@ -2,7 +2,7 @@ name: actions - clear logs
 
 on:
   schedule: # Run workflow automatically
-    - cron: "0 * * * *" # 每 1 个小时 运行一次
+    - cron: "0/10 * * * * " # 每 10 min 运行一次
   workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the Github Actions Workflow page directly
 
 jobs:
