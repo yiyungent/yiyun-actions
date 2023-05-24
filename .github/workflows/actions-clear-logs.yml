@@ -2,22 +2,42 @@ name: actions - clear logs
 
 on:
   schedule: # Run workflow automatically
-    - cron: '0 * * * *' # 每 1 个小时 运行一次
+    - cron: "0 * * * *" # 每 1 个小时 运行一次
   workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the Github Actions Workflow page directly
 
 jobs:
-  build-and-deploy:
+  clear-logs-1:
     runs-on: ubuntu-latest
     steps:
-    - name: clear-logs
-      run: |
-        $owner = "yiyungent"
-        $repoName = "actions"
-        $workflow_id = "notebook-deploy-hexo.yml"
-        $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
-        ./utils/clear-logs.ps1
-        $workflow_id = "yiyungent.github.io-deploy-hexo.yml"
-        ./utils/clear-logs.ps1
-        $workflow_id = "notebook-evernote-sync-to-notebook.yml"
-        ./utils/clear-logs.ps1
-      shell: pwsh
+      - name: clear-logs
+        run: |
+          $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
+          $owner = "yiyungent"
+          $repoName = "actions"
+          $workflow_id = "notebook-deploy-hexo.yml"
+          ./utils/clear-logs.ps1
+        shell: pwsh
+
+  clear-logs-2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clear-logs
+        run: |
+          $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
+          $owner = "yiyungent"
+          $repoName = "actions"
+          $workflow_id = "yiyungent.github.io-deploy-hexo.yml"
+          ./utils/clear-logs.ps1
+        shell: pwsh
+
+  clear-logs-3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clear-logs
+        run: |
+          $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
+          $owner = "yiyungent"
+          $repoName = "actions"
+          $workflow_id = "notebook-evernote-sync-to-notebook.yml"
+          ./utils/clear-logs.ps1
+        shell: pwsh
