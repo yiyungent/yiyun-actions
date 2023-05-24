@@ -15,7 +15,8 @@ jobs:
           $owner = "yiyungent"
           $repoName = "actions"
           $workflow_id = "notebook-deploy-hexo.yml"
-          ./utils/clear-logs.ps1
+          cd utils
+          ./clear-logs.ps1
         shell: pwsh
 
   clear-logs-2:
@@ -27,7 +28,8 @@ jobs:
           $owner = "yiyungent"
           $repoName = "actions"
           $workflow_id = "yiyungent.github.io-deploy-hexo.yml"
-          ./utils/clear-logs.ps1
+          cd utils
+          ./clear-logs.ps1
         shell: pwsh
 
   clear-logs-3:
@@ -39,5 +41,6 @@ jobs:
           $owner = "yiyungent"
           $repoName = "actions"
           $workflow_id = "notebook-evernote-sync-to-notebook.yml"
-          ./utils/clear-logs.ps1
+          cd utils
+          ./clear-logs.ps1
         shell: pwsh
