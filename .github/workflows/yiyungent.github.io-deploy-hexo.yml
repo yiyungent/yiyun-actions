@@ -170,6 +170,8 @@ jobs:
         branch: gh-pages
         folder: public
         repository-name: yiyungent/yiyungent.github.io
+        git-config-name: "github-actions[bot]"
+        git-config-email: "41898282+github-actions[bot]@users.noreply.github.com"
 
     - name: HTTP invoke deploy-github-pages.yml
       run: |
