@@ -1,0 +1,24 @@
+name: GitHub Backup to Dropbox
+
+on:
+  workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the Github Actions Workflow page directly
+  schedule: # Run workflow automatically
+    - cron: "0 * * * *" # 每 1 h 运行一次
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Backup
+        uses: chyroc/github2dropbox@v0.4.0
+        with:
+          DROPBOX_TOKEN: ${{ secrets.YUKCLI_DROPBOX_TOKEN }} # dropbox token
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN_ACTIONS }} # github token
+          ENABLE_REPO: true # enable repo backup
+          ENABLE_STAR: true # enable star backup
+          ENABLE_FOLLOWER: true # enable follower backup
+          ENABLE_FOLLOWING: true # enable following backup
+          ENABLE_GIST: true # enable gist backup
+          ENABLE_ISSUE: true # enable issue backup(need ENABLE_REPO=true)
+          ENABLE_ISSUE_COMMENT: true # enable issue comment backup(need ENABLE_REPO=true)
+          ENABLE_REPO_GIT: true # enable repo .git folder backup(need ENABLE_REPO=true)
