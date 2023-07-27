@@ -16,7 +16,7 @@ jobs:
         run: |
           $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
           $owner = "yiyungent"
-          $repoName = "actions"
+          $repoName = "yiyun-actions"
           $workflow_id = "notebook-deploy-hexo.yml"
           ./utils/clear-logs.ps1
         shell: pwsh
@@ -31,7 +31,7 @@ jobs:
         run: |
           $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
           $owner = "yiyungent"
-          $repoName = "actions"
+          $repoName = "yiyun-actions"
           $workflow_id = "yiyungent.github.io-deploy-hexo.yml"
           ./utils/clear-logs.ps1
         shell: pwsh
@@ -46,7 +46,7 @@ jobs:
         run: |
           $token = "${{ secrets.MY_GITHUB_TOKEN_ACTIONS }}"
           $owner = "yiyungent"
-          $repoName = "actions"
+          $repoName = "yiyun-actions"
           $workflow_id = "notebook-evernote-sync-to-notebook.yml"
           ./utils/clear-logs.ps1
         shell: pwsh
