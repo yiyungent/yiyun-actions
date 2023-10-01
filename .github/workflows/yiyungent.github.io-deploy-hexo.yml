@@ -108,6 +108,18 @@ jobs:
         ./替换换行符.ps1
       shell: pwsh
 
+    - name: javascript-obfuscator head.inject.js
+      run: |
+        npm i -g javascript-obfuscator
+        javascript-obfuscator source/static/js/head.inject.js --output source/static/js/head.inject.js --compact true --self-defending false
+        $oldStr=cat source/_data/head.njk
+        $flagStr='// head.inject.js'
+        $jsStr=cat source/static/js/head.inject.js
+        $newStr=$oldStr -replace $flagStr,$jsStr
+        echo $newStr
+        $newStr>source/_data/head.njk
+      shell: pwsh
+
     - name: Build 🔧 
       run: |
         hexo clean
