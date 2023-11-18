@@ -120,6 +120,23 @@ jobs:
         $newStr>source/_data/head.njk
       shell: pwsh
 
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.100
+
+    - name: Install tool coo
+      run: | 
+        dotnet tool install -g coo
+        coo --version
+      shell: bash
+
+    - name: Run tool rimg
+      id: run-tool-rimg
+      run: |
+        coo rimg source/_posts
+      shell: bash
+    
     - name: Build 🔧 
       run: |
         hexo clean
