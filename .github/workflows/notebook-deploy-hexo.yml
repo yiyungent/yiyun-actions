@@ -75,10 +75,14 @@ jobs:
       run: |
         # 解决 Hexo 文章时间为 UTC+0, 而不是 UTC+08:00
         export TZ='Asia/Shanghai'
-        npm install hexo-cli -g
-        npm install
+        npm config set registry https://registry.npmmirror.com
+        npm install -g hexo-cli
+        # npm install
+        # 使用 npm ci 锁定版本, 确保 CI/CD 环境与开发环境一致, 同时确保不会出现 prompt
+        npm ci
         hexo clean
         hexo generate
+      shell: bash
     
     # - name: 📂 Sync files
     #   uses: SamKirkland/FTP-Deploy-Action@4.0.0

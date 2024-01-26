@@ -85,6 +85,7 @@ jobs:
         
     - name: Install Packages 🔧 
       run: |
+        npm config set registry https://registry.npmmirror.com
         npm install -g hexo-cli
         # npm install
         # 使用 npm ci 锁定版本, 确保 CI/CD 环境与开发环境一致, 同时确保不会出现 prompt
