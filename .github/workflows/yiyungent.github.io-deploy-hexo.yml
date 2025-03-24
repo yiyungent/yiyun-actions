@@ -57,6 +57,13 @@ jobs:
         pip install pyimaging
         pyimaging --help
       shell: bash
+    
+    - name: Font obfuscate
+      run: |
+        pip install -r ./utils/font_obfuscator/requirements.txt
+        python ./utils/font_obfuscator/fontObfuscatorCli.py --input ./utils/font_obfuscator/input.ttf --output ./utils/font_obfuscator
+        mv ./utils/font_obfuscator/output.ttf ./source/static/
+      shell: bash
 
     - name: Copyright Add watermark to images
       run: |
@@ -128,14 +135,26 @@ jobs:
 
     - name: Install tool coo
       run: | 
-        dotnet tool install -g coo
-        coo --version
+        # dotnet tool install -g coo
+        # coo --version
+        curl https://github.com/yiyungent/KnifeHub/releases/download/coo-v0.4.40/coo-v0.4.40-linux-x64.zip -o coo-v0.4.40-linux-x64.zip
+        unzip coo-v0.4.40-linux-x64.zip
+        mv ./coo-v0.4.40-linux-x64/* ./
+        rmdir ./coo-v0.4.40-linux-x64/
+        ./coo --version
+      shell: bash
+    
+    - name: Markdown font obfuscate
+      id: md-font-obfuscate
+      run: |
+        ./coo mdfont source/_posts ./utils/font_obfuscator/mapping.json
       shell: bash
 
     - name: Run tool rimg
       id: run-tool-rimg
       run: |
-        coo rimg source/_posts
+        # coo rimg source/_posts
+        ./coo rimg source/_posts
       shell: bash
     
     - name: Build 🔧 
