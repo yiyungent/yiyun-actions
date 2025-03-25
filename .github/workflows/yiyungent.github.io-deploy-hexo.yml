@@ -139,10 +139,10 @@ jobs:
         # coo --version
         # 使用 -L 参数：自动跟随重定向（GitHub Releases 可能会重定向到实际文件）
         # 使用 -O 参数：自动以远程文件名保存
-        curl -LO https://github.com/yiyungent/KnifeHub/releases/download/coo-v0.4.40/coo-v0.4.40-linux-x64.zip
-        unzip coo-v0.4.40-linux-x64.zip
-        mv ./coo-v0.4.40-linux-x64/* ./
-        rmdir ./coo-v0.4.40-linux-x64/
+        curl -LO https://github.com/yiyungent/KnifeHub/releases/download/coo-v0.4.41/coo-v0.4.41-linux-x64.zip
+        unzip coo-v0.4.41-linux-x64.zip
+        mv ./coo-v0.4.41-linux-x64/* ./
+        rmdir ./coo-v0.4.41-linux-x64/
         ./coo --version
       shell: bash
     
