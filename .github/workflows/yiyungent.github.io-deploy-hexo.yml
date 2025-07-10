@@ -145,12 +145,6 @@ jobs:
         rmdir ./coo-v0.4.41-linux-x64/
         ./coo --version
       shell: bash
-    
-    - name: Markdown font obfuscate
-      id: md-font-obfuscate
-      run: |
-        ./coo mdfont source/_posts ./utils/font_obfuscator/mapping.json
-      shell: bash
 
     - name: Run tool rimg
       id: run-tool-rimg
@@ -158,7 +152,13 @@ jobs:
         # coo rimg source/_posts
         ./coo rimg source/_posts
       shell: bash
-    
+
+    - name: Markdown font obfuscate
+      id: md-font-obfuscate
+      run: |
+        ./coo mdfont source/_posts ./utils/font_obfuscator/mapping.json
+      shell: bash
+
     - name: Build 🔧 
       run: |
         hexo clean
