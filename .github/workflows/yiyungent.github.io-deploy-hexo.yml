@@ -103,7 +103,10 @@ jobs:
       id: fix-next-sidebar
       run: |
         # fixed: 使用 hexo-blog-encrypt 加密后, 导致 NexT 侧边目录不显示
-        cat './node_modules/hexo-theme-next/layout/_macro/sidebar.njk' | sed 's/toc(page.content/toc(page.origin/g' | tee './node_modules/hexo-theme-next/layout/_macro/sidebar.njk'
+        # fixed: 原命令有清空文件的风险。 cat 和 tee 在管道中并行运行，`tee` 可能在 cat 读完之前就截断同一个文件
+        # cat './node_modules/hexo-theme-next/layout/_macro/sidebar.njk' | sed 's/toc(page.content/toc(page.origin/g' | tee './node_modules/hexo-theme-next/layout/_macro/sidebar.njk'
+        # 原地修改并保留一份 .bak 备份
+        sed -i.bak 's/toc(page\.content/toc(page.origin/g' './node_modules/hexo-theme-next/layout/_macro/sidebar.njk'
         CON=$(cat './node_modules/hexo-theme-next/layout/_macro/sidebar.njk')
         # 获取字符串长度
         CON=${#CON}
